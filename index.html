@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blank Street — Inventory Count</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    background: #F5F5F0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px;
+  }
+
+  .page-title {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #999;
+    margin-bottom: 24px;
+  }
+
+  .screens {
+    display: flex;
+    gap: 28px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .screen-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .screen-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: #aaa;
+  }
+
+  .phone {
+    width: 280px;
+    min-height: 580px;
+    background: #fff;
+    border-radius: 28px;
+    border: 1.5px solid #e0e0e0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+  }
+
+  .status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 18px 6px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #888;
+  }
+
+  .topbar { padding: 4px 18px 12px; }
+
+  .topbar-title { font-size: 18px; font-weight: 600; color: #111; line-height: 1.2; }
+  .topbar-sub { font-size: 12px; color: #aaa; margin-top: 2px; }
+
+  .divider { height: 0.5px; background: #eee; margin: 0 18px; }
+
+  /* Progress bar */
+  .progress-wrap { padding: 10px 18px 0; }
+  .progress-track { height: 3px; background: #eee; border-radius: 2px; overflow: hidden; margin-bottom: 5px; }
+  .progress-fill { height: 100%; background: #111; border-radius: 2px; transition: width 0.3s; }
+  .progress-text { font-size: 11px; color: #aaa; display: flex; justify-content: space-between; }
+
+  /* Item list */
+  .section-label {
+    padding: 10px 18px 4px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #bbb;
+  }
+
+  .item-row {
+    display: flex;
+    align-items: center;
+    padding: 10px 18px;
+    gap: 12px;
+    border-bottom: 0.5px solid #f0f0f0;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .item-row:hover { background: #fafafa; }
+  .item-row:last-child { border-bottom: none; }
+
+  .item-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: #f5f5f0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+  }
+
+  .item-name { font-size: 14px; font-weight: 500; color: #111; flex: 1; }
+  .item-unit { font-size: 11px; color: #bbb; }
+  .item-chevron { font-size: 14px; color: #ccc; }
+
+  .item-done .item-name { color: #aaa; }
+  .item-done .item-icon { opacity: 0.5; }
+  .check-badge {
+    width: 18px; height: 18px;
+    background: #111;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-size: 10px;
+    flex-shrink: 0;
+  }
+
+  .start-btn {
+    margin: 12px 18px;
+    padding: 13px;
+    background: #111;
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: 600;
+    width: calc(100% - 36px);
+    text-align: center;
+    cursor: pointer;
+    letter-spacing: 0.01em;
+  }
+
+  /* Count screen */
+  .count-header {
+    padding: 8px 18px 4px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .count-icon-lg {
+    width: 42px; height: 42px;
+    border-radius: 11px;
+    background: #f5f5f0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+
+  .count-item-name { font-size: 17px; font-weight: 600; color: #111; }
+  .count-item-sub { font-size: 11px; color: #bbb; margin-top: 2px; }
+
+  .location-chips {
+    display: flex;
+    gap: 6px;
+    padding: 8px 18px 4px;
+    flex-wrap: wrap;
+  }
+
+  .chip {
+    padding: 4px 12px;
+    border-radius: 20px;
+    background: #f5f5f0;
+    font-size: 11px;
+    font-weight: 600;
+    color: #888;
+    border: 0.5px solid #e8e8e8;
+    cursor: pointer;
+  }
+
+  .chip.active { background: #111; color: #fff; border-color: #111; }
+
+  .tally {
+    text-align: center;
+    padding: 14px 18px 6px;
+  }
+
+  .tally-num {
+    font-size: 64px;
+    font-weight: 700;
+    color: #111;
+    line-height: 1;
+    letter-spacing: -3px;
+  }
+
+  .tally-lbl { font-size: 13px; color: #bbb; margin-top: 4px; }
+
+  .tap-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 8px 18px 10px;
+  }
+
+  .tap-btn {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    border: 1.5px solid #e0e0e0;
+    background: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    color: #333;
+    cursor: pointer;
+    transition: transform 0.1s, background 0.1s;
+    user-select: none;
+  }
+
+  .tap-btn:active { transform: scale(0.93); background: #f5f5f0; }
+
+  .tap-btn-primary {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: #111;
+    color: #fff;
+    border: none;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 30px;
+    cursor: pointer;
+    transition: transform 0.1s, background 0.1s;
+    user-select: none;
+  }
+
+  .tap-btn-primary:active { transform: scale(0.93); background: #333; }
+
+  .note-row {
+    padding: 4px 18px 10px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .note-input {
+    flex: 1;
+    height: 32px;
+    border: 0.5px solid #e8e8e8;
+    border-radius: 8px;
+    padding: 0 10px;
+    font-size: 12px;
+    color: #333;
+    background: #fafafa;
+    outline: none;
+    font-family: inherit;
+  }
+
+  .note-input:focus { border-color: #bbb; }
+
+  .note-icon { font-size: 15px; color: #bbb; }
+
+  .next-btn {
+    margin: 6px 18px 4px;
+    padding: 12px 16px;
+    background: #111;
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    font-size: 13px;
+    font-weight: 600;
+    width: calc(100% - 36px);
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer;
+  }
+
+  .skip-link {
+    text-align: center;
+    font-size: 12px;
+    color: #bbb;
+    padding-bottom: 6px;
+    cursor: pointer;
+  }
+
+  /* Review screen */
+  .summary-bar {
+    display: flex;
+    gap: 8px;
+    padding: 10px 18px;
+  }
+
+  .summary-tile {
+    flex: 1;
+    background: #f5f5f0;
+    border-radius: 10px;
+    padding: 8px 10px;
+  }
+
+  .summary-val { font-size: 20px; font-weight: 700; color: #111; line-height: 1; }
+  .summary-val.warn { color: #E65100; }
+  .summary-lbl { font-size: 10px; color: #bbb; margin-top: 2px; }
+
+  .review-row {
+    display: flex;
+    align-items: center;
+    padding: 9px 18px;
+    gap: 10px;
+    border-bottom: 0.5px solid #f0f0f0;
+  }
+
+  .review-row:last-child { border-bottom: none; }
+  .review-row.flagged { background: #FFF8F5; }
+
+  .review-icon {
+    width: 28px; height: 28px;
+    border-radius: 7px;
+    background: #f5f5f0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+  }
+
+  .review-name { font-size: 13px; font-weight: 500; color: #111; flex: 1; }
+
+  .flag-badge {
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 20px;
+    background: #FFF3E0;
+    color: #E65100;
+    font-weight: 600;
+  }
+
+  .review-count { font-size: 15px; font-weight: 600; color: #111; min-width: 24px; text-align: right; }
+  .review-count.warn { color: #E65100; }
+
+  .review-edit { font-size: 14px; color: #ccc; margin-left: 6px; cursor: pointer; }
+  .review-edit:hover { color: #888; }
+
+  .submit-btn {
+    margin: 8px 18px 14px;
+    padding: 14px;
+    background: #111;
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: 600;
+    width: calc(100% - 36px);
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    letter-spacing: 0.01em;
+  }
+
+  /* Back arrow */
+  .back-btn {
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: #888;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .topbar-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 18px 10px;
+  }
+
+  .topbar-meta { flex: 1; }
+
+  .scroll-area { overflow: visible; }
+
+  @media (max-width: 960px) {
+    .screens { flex-direction: column; align-items: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-title">Blank Street · Inventory Count · Prototype</div>
+
+<div class="screens">
+
+  <!-- Screen 1: Start count -->
+  <div class="screen-wrap">
+    <div class="screen-label">1 — start count</div>
+    <div class="phone">
+      <div class="status-bar">
+        <span>9:41</span>
+        <span>●●●●○ 📶 🔋</span>
+      </div>
+      <div class="topbar">
+        <div class="topbar-title">Inventory count</div>
+        <div class="topbar-sub">Soho · Morning shift · Mon 2 Jun</div>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-track"><div class="progress-fill" style="width:0%"></div></div>
+        <div class="progress-text"><span>0 of 10 items counted</span><span>0%</span></div>
+      </div>
+      <div class="divider" style="margin-top:10px"></div>
+      <div class="scroll-area">
+        <div class="section-label">Beans & espresso</div>
+        <div class="item-row"><div class="item-icon">☕</div><div class="item-name">House blend beans</div><div class="item-unit">bags</div><div class="item-chevron">›</div></div>
+        <div class="item-row"><div class="item-icon">🫘</div><div class="item-name">Decaf beans</div><div class="item-unit">bags</div><div class="item-chevron">›</div></div>
+        <div class="section-label">Milk & dairy</div>
+        <div class="item-row"><div class="item-icon">🥛</div><div class="item-name">Whole milk</div><div class="item-unit">cartons</div><div class="item-chevron">›</div></div>
+        <div class="item-row"><div class="item-icon">🌿</div><div class="item-name">Oat milk</div><div class="item-unit">cartons</div><div class="item-chevron">›</div></div>
+        <div class="section-label">Syrups & sauces</div>
+        <div class="item-row"><div class="item-icon">🍵</div><div class="item-name">Matcha powder</div><div class="item-unit">tins</div><div class="item-chevron">›</div></div>
+        <div class="item-row"><div class="item-icon">🍦</div><div class="item-name">Vanilla syrup</div><div class="item-unit">bottles</div><div class="item-chevron">›</div></div>
+        <div class="item-row"><div class="item-icon">🧇</div><div class="item-name">Caramel syrup</div><div class="item-unit">bottles</div><div class="item-chevron">›</div></div>
+        <div class="section-label">Cups & packaging</div>
+        <div class="item-row"><div class="item-icon">🥤</div><div class="item-name">12oz cups</div><div class="item-unit">sleeves</div><div class="item-chevron">›</div></div>
+        <div class="item-row"><div class="item-icon">🔵</div><div class="item-name">Cup lids</div><div class="item-unit">packs</div><div class="item-chevron">›</div></div>
+        <div class="item-row"><div class="item-icon">❄️</div><div class="item-name">Cold brew</div><div class="item-unit">bottles</div><div class="item-chevron">›</div></div>
+      </div>
+      <div class="divider"></div>
+      <button class="start-btn">Start count →</button>
+    </div>
+  </div>
+
+  <!-- Screen 2: Active count (interactive) -->
+  <div class="screen-wrap">
+    <div class="screen-label">2 — count item (interactive)</div>
+    <div class="phone">
+      <div class="status-bar">
+        <span>9:43</span>
+        <span>●●●●○ 📶 🔋</span>
+      </div>
+      <div class="topbar-row">
+        <button class="back-btn" onclick="void(0)">←</button>
+        <div class="topbar-meta">
+          <div class="topbar-title" style="font-size:15px">Item 3 of 10</div>
+          <div class="topbar-sub">Soho · Morning shift</div>
+        </div>
+        <div style="font-size:11px;color:#bbb;">30%</div>
+      </div>
+      <div class="progress-wrap" style="padding-top:0;margin-bottom:8px;">
+        <div class="progress-track"><div class="progress-fill" style="width:30%"></div></div>
+      </div>
+      <div class="divider"></div>
+      <div class="count-header">
+        <div class="count-icon-lg">🥛</div>
+        <div>
+          <div class="count-item-name">Whole milk</div>
+          <div class="count-item-sub">Count in cartons · fridge + back of house</div>
+        </div>
+      </div>
+      <div>
+        <div style="padding:4px 18px 2px;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#bbb;">Location</div>
+        <div class="location-chips">
+          <div class="chip active" onclick="setChip(this)">Fridge</div>
+          <div class="chip" onclick="setChip(this)">Back of house</div>
+          <div class="chip" onclick="setChip(this)">Both</div>
+        </div>
+      </div>
+      <div class="tally">
+        <div class="tally-num" id="count-display">14</div>
+        <div class="tally-lbl">cartons counted</div>
+      </div>
+      <div class="tap-controls">
+        <button class="tap-btn" onclick="adjustCount(-1)" aria-label="minus one">−</button>
+        <button class="tap-btn-primary" onclick="adjustCount(1)" aria-label="plus one">+</button>
+        <button class="tap-btn" onclick="adjustCount(5)" aria-label="plus five" style="font-size:13px;font-weight:700;color:#444;">+5</button>
+      </div>
+      <div class="note-row">
+        <span class="note-icon">📝</span>
+        <input class="note-input" placeholder="Add a note (optional)" type="text">
+      </div>
+      <div class="divider"></div>
+      <button class="next-btn">
+        <span>Next: Oat milk</span>
+        <span>→</span>
+      </button>
+      <div class="skip-link">Skip item</div>
+    </div>
+  </div>
+
+  <!-- Screen 3: Review & submit -->
+  <div class="screen-wrap">
+    <div class="screen-label">3 — review & submit</div>
+    <div class="phone">
+      <div class="status-bar">
+        <span>9:51</span>
+        <span>●●●●○ 📶 🔋</span>
+      </div>
+      <div class="topbar">
+        <div class="topbar-title">Review count</div>
+        <div class="topbar-sub">Soho · Morning shift · Mon 2 Jun</div>
+      </div>
+      <div class="summary-bar">
+        <div class="summary-tile"><div class="summary-val">10</div><div class="summary-lbl">Items</div></div>
+        <div class="summary-tile"><div class="summary-val">8 min</div><div class="summary-lbl">Time taken</div></div>
+        <div class="summary-tile"><div class="summary-val warn">1</div><div class="summary-lbl">Flagged</div></div>
+      </div>
+      <div class="divider"></div>
+      <div class="scroll-area">
+        <div class="review-row"><div class="review-icon">☕</div><div class="review-name">House blend beans</div><div class="review-count">4</div><div class="review-edit">✎</div></div>
+        <div class="review-row"><div class="review-icon">🫘</div><div class="review-name">Decaf beans</div><div class="review-count">2</div><div class="review-edit">✎</div></div>
+        <div class="review-row"><div class="review-icon">🥛</div><div class="review-name">Whole milk</div><div class="review-count">14</div><div class="review-edit">✎</div></div>
+        <div class="review-row flagged"><div class="review-icon">🌿</div><div class="review-name">Oat milk</div><div class="flag-badge">Low ⚠</div><div class="review-count warn">3</div><div class="review-edit">✎</div></div>
+        <div class="review-row"><div class="review-icon">🍵</div><div class="review-name">Matcha powder</div><div class="review-count">6</div><div class="review-edit">✎</div></div>
+        <div class="review-row"><div class="review-icon">🍦</div><div class="review-name">Vanilla syrup</div><div class="review-count">5</div><div class="review-edit">✎</div></div>
+        <div class="review-row"><div class="review-icon">🧇</div><div class="review-name">Caramel syrup</div><div class="review-count">3</div><div class="review-edit">✎</div></div>
+        <div class="review-row"><div class="review-icon">🥤</div><div class="review-name">12oz cups</div><div class="review-count">11</div><div class="review-edit">✎</div></div>
+        <div class="review-row"><div class="review-icon">🔵</div><div class="review-name">Cup lids</div><div class="review-count">9</div><div class="review-edit">✎</div></div>
+        <div class="review-row"><div class="review-icon">❄️</div><div class="review-name">Cold brew</div><div class="review-count">7</div><div class="review-edit">✎</div></div>
+      </div>
+      <div class="divider"></div>
+      <button class="submit-btn" onclick="alert('Count submitted! ✓')">✓ &nbsp; Submit count</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let count = 14;
+
+  function adjustCount(delta) {
+    count = Math.max(0, count + delta);
+    document.getElementById('count-display').textContent = count;
+  }
+
+  function setChip(el) {
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+  }
+</script>
+</body>
+</html>
