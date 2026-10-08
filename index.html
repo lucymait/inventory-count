@@ -6,528 +6,420 @@
 <title>Blank Street — Inventory Count</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
-    background: #F5F5F0;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 32px 16px;
+    background: #F5F5F0; color: #111; min-height: 100vh;
+    padding: 32px 16px 48px;
   }
+  .page-title { text-align: center; font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #999; margin-bottom: 6px; }
+  .page-sub { text-align: center; font-size: 13px; color: #888; margin-bottom: 28px; }
+  .layout { display: flex; gap: 40px; justify-content: center; align-items: flex-start; flex-wrap: wrap; max-width: 1040px; margin: 0 auto; }
 
-  .page-title {
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #999;
-    margin-bottom: 24px;
-  }
+  /* Phone */
+  .phone-col { position: sticky; top: 24px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .phone { width: 300px; height: 620px; background: #fff; border-radius: 30px; border: 1.5px solid #e0e0e0; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 2px 16px rgba(0,0,0,.07); position: relative; }
+  .status-bar { display: flex; justify-content: space-between; padding: 10px 20px 6px; font-size: 11px; font-weight: 600; color: #888; flex-shrink: 0; }
+  .screen { display: none; flex: 1; flex-direction: column; min-height: 0; }
+  .screen.active { display: flex; }
+  .scroll { flex: 1; overflow-y: auto; min-height: 0; }
+  .reset-link { position: relative; z-index: 5; padding: 6px 10px; font-size: 12px; color: #999; background: none; border: none; cursor: pointer; text-decoration: underline; }
 
-  .screens {
-    display: flex;
-    gap: 28px;
-    align-items: flex-start;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
+  .topbar { padding: 4px 18px 10px; }
+  .topbar-row { display: flex; align-items: center; gap: 8px; padding: 4px 18px 10px; }
+  .title { font-size: 18px; font-weight: 600; line-height: 1.2; }
+  .sub { font-size: 12px; color: #aaa; margin-top: 2px; }
+  .back-btn { background: none; border: none; font-size: 18px; color: #888; cursor: pointer; padding: 4px; }
+  .divider { height: .5px; background: #eee; margin: 0 18px; flex-shrink: 0; }
 
-  .screen-wrap {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .screen-label {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.07em;
-    text-transform: uppercase;
-    color: #aaa;
-  }
-
-  .phone {
-    width: 280px;
-    min-height: 580px;
-    background: #fff;
-    border-radius: 28px;
-    border: 1.5px solid #e0e0e0;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 2px 16px rgba(0,0,0,0.07);
-  }
-
-  .status-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 18px 6px;
-    font-size: 11px;
-    font-weight: 600;
-    color: #888;
-  }
-
-  .topbar { padding: 4px 18px 12px; }
-
-  .topbar-title { font-size: 18px; font-weight: 600; color: #111; line-height: 1.2; }
-  .topbar-sub { font-size: 12px; color: #aaa; margin-top: 2px; }
-
-  .divider { height: 0.5px; background: #eee; margin: 0 18px; }
-
-  /* Progress bar */
-  .progress-wrap { padding: 10px 18px 0; }
-  .progress-track { height: 3px; background: #eee; border-radius: 2px; overflow: hidden; margin-bottom: 5px; }
-  .progress-fill { height: 100%; background: #111; border-radius: 2px; transition: width 0.3s; }
+  .progress-wrap { padding: 4px 18px 10px; }
+  .track { height: 3px; background: #eee; border-radius: 2px; overflow: hidden; margin-bottom: 5px; }
+  .fill { height: 100%; background: #111; border-radius: 2px; transition: width .3s; }
   .progress-text { font-size: 11px; color: #aaa; display: flex; justify-content: space-between; }
 
-  /* Item list */
-  .section-label {
-    padding: 10px 18px 4px;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #bbb;
-  }
+  .section-label { padding: 10px 18px 4px; font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #bbb; }
+  .row { display: flex; align-items: center; padding: 9px 18px; gap: 10px; border-bottom: .5px solid #f3f3f3; cursor: pointer; background: none; width: 100%; border-left: none; border-right: none; border-top: none; text-align: left; font: inherit; color: inherit; }
+  .row:hover { background: #fafafa; }
+  .icon { width: 30px; height: 30px; border-radius: 8px; background: #f5f5f0; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+  .name { font-size: 14px; font-weight: 500; flex: 1; }
+  .unit { font-size: 11px; color: #bbb; }
+  .val { font-size: 14px; font-weight: 600; min-width: 22px; text-align: right; }
+  .warn { color: #C2410C; }
+  .muted { color: #bbb; }
+  .badge { font-size: 10px; padding: 2px 7px; border-radius: 20px; font-weight: 600; white-space: nowrap; }
+  .badge.low { background: #FFF1E6; color: #C2410C; }
+  .badge.skip { background: #f1f1f1; color: #888; }
+  .row.flag { background: #FFF8F5; }
+  .tick { width: 18px; height: 18px; border-radius: 50%; background: #111; color: #fff; font-size: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
-  .item-row {
-    display: flex;
-    align-items: center;
-    padding: 10px 18px;
-    gap: 12px;
-    border-bottom: 0.5px solid #f0f0f0;
-    cursor: pointer;
-    transition: background 0.15s;
-  }
-
-  .item-row:hover { background: #fafafa; }
-  .item-row:last-child { border-bottom: none; }
-
-  .item-icon {
-    width: 32px; height: 32px;
-    border-radius: 8px;
-    background: #f5f5f0;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 15px;
-  }
-
-  .item-name { font-size: 14px; font-weight: 500; color: #111; flex: 1; }
-  .item-unit { font-size: 11px; color: #bbb; }
-  .item-chevron { font-size: 14px; color: #ccc; }
-
-  .item-done .item-name { color: #aaa; }
-  .item-done .item-icon { opacity: 0.5; }
-  .check-badge {
-    width: 18px; height: 18px;
-    background: #111;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    color: #fff;
-    font-size: 10px;
-    flex-shrink: 0;
-  }
-
-  .start-btn {
-    margin: 12px 18px;
-    padding: 13px;
-    background: #111;
-    color: #fff;
-    border: none;
-    border-radius: 14px;
-    font-size: 14px;
-    font-weight: 600;
-    width: calc(100% - 36px);
-    text-align: center;
-    cursor: pointer;
-    letter-spacing: 0.01em;
-  }
+  .btn { margin: 10px 18px 14px; padding: 13px 16px; background: #111; color: #fff; border: none; border-radius: 14px; font-size: 14px; font-weight: 600; width: calc(100% - 36px); cursor: pointer; display: flex; justify-content: center; gap: 8px; flex-shrink: 0; }
+  .btn.split { justify-content: space-between; }
+  .btn:disabled { background: #ccc; cursor: default; }
+  .link { text-align: center; font-size: 12px; color: #999; padding-bottom: 10px; cursor: pointer; background: none; border: none; width: 100%; font-family: inherit; }
 
   /* Count screen */
-  .count-header {
-    padding: 8px 18px 4px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .count-icon-lg {
-    width: 42px; height: 42px;
-    border-radius: 11px;
-    background: #f5f5f0;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 22px;
-  }
-
-  .count-item-name { font-size: 17px; font-weight: 600; color: #111; }
-  .count-item-sub { font-size: 11px; color: #bbb; margin-top: 2px; }
-
-  .location-chips {
-    display: flex;
-    gap: 6px;
-    padding: 8px 18px 4px;
-    flex-wrap: wrap;
-  }
-
-  .chip {
-    padding: 4px 12px;
-    border-radius: 20px;
-    background: #f5f5f0;
-    font-size: 11px;
-    font-weight: 600;
-    color: #888;
-    border: 0.5px solid #e8e8e8;
-    cursor: pointer;
-  }
-
+  .count-head { padding: 10px 18px 4px; display: flex; align-items: center; gap: 10px; }
+  .icon-lg { width: 42px; height: 42px; border-radius: 11px; background: #f5f5f0; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+  .item-title { font-size: 17px; font-weight: 600; }
+  .chips { display: flex; gap: 6px; padding: 8px 18px 0; }
+  .chip { padding: 5px 12px; border-radius: 20px; background: #f5f5f0; font-size: 11px; font-weight: 600; color: #777; border: .5px solid #e8e8e8; cursor: pointer; font-family: inherit; }
   .chip.active { background: #111; color: #fff; border-color: #111; }
+  .chip small { font-weight: 500; opacity: .7; margin-left: 3px; }
+  .tally { text-align: center; padding: 14px 18px 2px; }
+  .tally-num { font-size: 60px; font-weight: 700; line-height: 1; letter-spacing: -3px; }
+  .tally-lbl { font-size: 12px; color: #aaa; margin-top: 4px; min-height: 16px; }
+  .hint { margin: 4px 18px 0; font-size: 11px; text-align: center; min-height: 15px; }
+  .controls { display: flex; align-items: center; justify-content: center; gap: 14px; padding: 8px 18px; }
+  .tap { width: 52px; height: 52px; border-radius: 50%; border: 1.5px solid #e0e0e0; background: #fff; font-size: 20px; color: #333; cursor: pointer; user-select: none; font-family: inherit; }
+  .tap.primary { width: 70px; height: 70px; background: #111; color: #fff; border: none; font-size: 30px; }
+  .tap:active { transform: scale(.93); }
+  .note { margin: 2px 18px 6px; display: flex; gap: 8px; align-items: center; }
+  .note input { flex: 1; height: 32px; border: .5px solid #e3e3e3; border-radius: 8px; padding: 0 10px; font-size: 12px; background: #fafafa; font-family: inherit; outline: none; }
+  .note input:focus { border-color: #aaa; }
 
-  .tally {
-    text-align: center;
-    padding: 14px 18px 6px;
-  }
+  /* Review */
+  .tiles { display: flex; gap: 8px; padding: 4px 18px 10px; }
+  .tile { flex: 1; background: #f5f5f0; border-radius: 10px; padding: 8px 10px; }
+  .tile b { display: block; font-size: 19px; line-height: 1; }
+  .tile span { font-size: 10px; color: #aaa; }
+  .alert { margin: 0 18px 8px; padding: 8px 10px; border-radius: 10px; background: #f5f5f0; font-size: 11px; color: #666; }
 
-  .tally-num {
-    font-size: 64px;
-    font-weight: 700;
-    color: #111;
-    line-height: 1;
-    letter-spacing: -3px;
-  }
+  /* Done */
+  .done { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 30px 22px 0; text-align: center; }
+  .done-check { width: 56px; height: 56px; border-radius: 50%; background: #111; color: #fff; font-size: 26px; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
+  .order { width: 100%; text-align: left; margin-top: 16px; }
 
-  .tally-lbl { font-size: 13px; color: #bbb; margin-top: 4px; }
+  /* Rationale */
+  .rationale { flex: 1; min-width: 300px; max-width: 560px; background: #fff; border: 1px solid #eaeaea; border-radius: 18px; padding: 26px 28px; font-size: 14px; line-height: 1.55; color: #333; }
+  .rationale h2 { font-size: 18px; margin-bottom: 4px; color: #111; }
+  .rationale h3 { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: #999; margin: 22px 0 8px; }
+  .rationale p { margin-bottom: 8px; }
+  .rationale ul { padding-left: 18px; }
+  .rationale li { margin-bottom: 7px; }
+  .rationale strong { color: #111; }
+  .rationale .lede { color: #777; font-size: 13px; }
 
-  .tap-controls {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 14px;
-    padding: 8px 18px 10px;
-  }
-
-  .tap-btn {
-    width: 52px; height: 52px;
-    border-radius: 50%;
-    border: 1.5px solid #e0e0e0;
-    background: #fff;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 22px;
-    color: #333;
-    cursor: pointer;
-    transition: transform 0.1s, background 0.1s;
-    user-select: none;
-  }
-
-  .tap-btn:active { transform: scale(0.93); background: #f5f5f0; }
-
-  .tap-btn-primary {
-    width: 72px; height: 72px;
-    border-radius: 50%;
-    background: #111;
-    color: #fff;
-    border: none;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 30px;
-    cursor: pointer;
-    transition: transform 0.1s, background 0.1s;
-    user-select: none;
-  }
-
-  .tap-btn-primary:active { transform: scale(0.93); background: #333; }
-
-  .note-row {
-    padding: 4px 18px 10px;
-    display: flex; align-items: center; gap: 8px;
-  }
-
-  .note-input {
-    flex: 1;
-    height: 32px;
-    border: 0.5px solid #e8e8e8;
-    border-radius: 8px;
-    padding: 0 10px;
-    font-size: 12px;
-    color: #333;
-    background: #fafafa;
-    outline: none;
-    font-family: inherit;
-  }
-
-  .note-input:focus { border-color: #bbb; }
-
-  .note-icon { font-size: 15px; color: #bbb; }
-
-  .next-btn {
-    margin: 6px 18px 4px;
-    padding: 12px 16px;
-    background: #111;
-    color: #fff;
-    border: none;
-    border-radius: 14px;
-    font-size: 13px;
-    font-weight: 600;
-    width: calc(100% - 36px);
-    display: flex; align-items: center; justify-content: space-between;
-    cursor: pointer;
-  }
-
-  .skip-link {
-    text-align: center;
-    font-size: 12px;
-    color: #bbb;
-    padding-bottom: 6px;
-    cursor: pointer;
-  }
-
-  /* Review screen */
-  .summary-bar {
-    display: flex;
-    gap: 8px;
-    padding: 10px 18px;
-  }
-
-  .summary-tile {
-    flex: 1;
-    background: #f5f5f0;
-    border-radius: 10px;
-    padding: 8px 10px;
-  }
-
-  .summary-val { font-size: 20px; font-weight: 700; color: #111; line-height: 1; }
-  .summary-val.warn { color: #E65100; }
-  .summary-lbl { font-size: 10px; color: #bbb; margin-top: 2px; }
-
-  .review-row {
-    display: flex;
-    align-items: center;
-    padding: 9px 18px;
-    gap: 10px;
-    border-bottom: 0.5px solid #f0f0f0;
-  }
-
-  .review-row:last-child { border-bottom: none; }
-  .review-row.flagged { background: #FFF8F5; }
-
-  .review-icon {
-    width: 28px; height: 28px;
-    border-radius: 7px;
-    background: #f5f5f0;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 13px;
-  }
-
-  .review-name { font-size: 13px; font-weight: 500; color: #111; flex: 1; }
-
-  .flag-badge {
-    font-size: 10px;
-    padding: 2px 7px;
-    border-radius: 20px;
-    background: #FFF3E0;
-    color: #E65100;
-    font-weight: 600;
-  }
-
-  .review-count { font-size: 15px; font-weight: 600; color: #111; min-width: 24px; text-align: right; }
-  .review-count.warn { color: #E65100; }
-
-  .review-edit { font-size: 14px; color: #ccc; margin-left: 6px; cursor: pointer; }
-  .review-edit:hover { color: #888; }
-
-  .submit-btn {
-    margin: 8px 18px 14px;
-    padding: 14px;
-    background: #111;
-    color: #fff;
-    border: none;
-    border-radius: 14px;
-    font-size: 14px;
-    font-weight: 600;
-    width: calc(100% - 36px);
-    display: flex; align-items: center; justify-content: center;
-    gap: 8px;
-    cursor: pointer;
-    letter-spacing: 0.01em;
-  }
-
-  /* Back arrow */
-  .back-btn {
-    background: none;
-    border: none;
-    font-size: 18px;
-    color: #888;
-    cursor: pointer;
-    padding: 0;
-  }
-
-  .topbar-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 4px 18px 10px;
-  }
-
-  .topbar-meta { flex: 1; }
-
-  .scroll-area { overflow: visible; }
-
-  @media (max-width: 960px) {
-    .screens { flex-direction: column; align-items: center; }
-  }
+  @media (max-width: 760px) { .phone-col { position: static; } }
 </style>
 </head>
 <body>
 
-<div class="page-title">Blank Street · Inventory Count · Prototype</div>
+<div class="page-title">Blank Street · Inventory Count · Working prototype</div>
+<div class="page-sub">Tap through it as a store manager would. Product rationale on the right.</div>
 
-<div class="screens">
+<div class="layout">
+  <div class="phone-col">
+    <div class="phone" id="phone">
+      <div class="status-bar"><span id="clock">9:41</span><span>●●●●○ 🔋</span></div>
 
-  <!-- Screen 1: Start count -->
-  <div class="screen-wrap">
-    <div class="screen-label">1 — start count</div>
-    <div class="phone">
-      <div class="status-bar">
-        <span>9:41</span>
-        <span>●●●●○ 📶 🔋</span>
-      </div>
-      <div class="topbar">
-        <div class="topbar-title">Inventory count</div>
-        <div class="topbar-sub">Soho · Morning shift · Mon 2 Jun</div>
-      </div>
-      <div class="progress-wrap">
-        <div class="progress-track"><div class="progress-fill" style="width:0%"></div></div>
-        <div class="progress-text"><span>0 of 10 items counted</span><span>0%</span></div>
-      </div>
-      <div class="divider" style="margin-top:10px"></div>
-      <div class="scroll-area">
-        <div class="section-label">Beans & espresso</div>
-        <div class="item-row"><div class="item-icon">☕</div><div class="item-name">House blend beans</div><div class="item-unit">bags</div><div class="item-chevron">›</div></div>
-        <div class="item-row"><div class="item-icon">🫘</div><div class="item-name">Decaf beans</div><div class="item-unit">bags</div><div class="item-chevron">›</div></div>
-        <div class="section-label">Milk & dairy</div>
-        <div class="item-row"><div class="item-icon">🥛</div><div class="item-name">Whole milk</div><div class="item-unit">cartons</div><div class="item-chevron">›</div></div>
-        <div class="item-row"><div class="item-icon">🌿</div><div class="item-name">Oat milk</div><div class="item-unit">cartons</div><div class="item-chevron">›</div></div>
-        <div class="section-label">Syrups & sauces</div>
-        <div class="item-row"><div class="item-icon">🍵</div><div class="item-name">Matcha powder</div><div class="item-unit">tins</div><div class="item-chevron">›</div></div>
-        <div class="item-row"><div class="item-icon">🍦</div><div class="item-name">Vanilla syrup</div><div class="item-unit">bottles</div><div class="item-chevron">›</div></div>
-        <div class="item-row"><div class="item-icon">🧇</div><div class="item-name">Caramel syrup</div><div class="item-unit">bottles</div><div class="item-chevron">›</div></div>
-        <div class="section-label">Cups & packaging</div>
-        <div class="item-row"><div class="item-icon">🥤</div><div class="item-name">12oz cups</div><div class="item-unit">sleeves</div><div class="item-chevron">›</div></div>
-        <div class="item-row"><div class="item-icon">🔵</div><div class="item-name">Cup lids</div><div class="item-unit">packs</div><div class="item-chevron">›</div></div>
-        <div class="item-row"><div class="item-icon">❄️</div><div class="item-name">Cold brew</div><div class="item-unit">bottles</div><div class="item-chevron">›</div></div>
-      </div>
-      <div class="divider"></div>
-      <button class="start-btn">Start count →</button>
+      <!-- 1. Start / item list -->
+      <section class="screen active" id="s-list">
+        <div class="topbar">
+          <div class="title">Inventory count</div>
+          <div class="sub">Soho · Morning shift</div>
+        </div>
+        <div class="progress-wrap">
+          <div class="track"><div class="fill" id="list-fill"></div></div>
+          <div class="progress-text"><span id="list-progress"></span><span id="list-pct"></span></div>
+        </div>
+        <div class="divider"></div>
+        <div class="scroll" id="list"></div>
+        <div class="divider"></div>
+        <button class="btn" id="start-btn"></button>
+      </section>
+
+      <!-- 2. Count one item -->
+      <section class="screen" id="s-count">
+        <div class="topbar-row">
+          <button class="back-btn" id="count-back" aria-label="Back">←</button>
+          <div style="flex:1"><div class="title" style="font-size:15px" id="count-pos"></div><div class="sub">Soho · Morning shift</div></div>
+          <div class="sub" id="count-pct"></div>
+        </div>
+        <div class="progress-wrap" style="padding-top:0"><div class="track"><div class="fill" id="count-fill"></div></div></div>
+        <div class="divider"></div>
+        <div class="scroll">
+          <div class="count-head">
+            <div class="icon-lg" id="c-icon"></div>
+            <div><div class="item-title" id="c-name"></div><div class="sub" id="c-sub"></div></div>
+          </div>
+          <div class="chips" id="chips"></div>
+          <div class="tally">
+            <div class="tally-num" id="c-num">0</div>
+            <div class="tally-lbl" id="c-lbl"></div>
+          </div>
+          <div class="hint" id="c-hint"></div>
+          <div class="controls">
+            <button class="tap" data-d="-1" aria-label="Minus one">−</button>
+            <button class="tap primary" data-d="1" aria-label="Plus one">+</button>
+            <button class="tap" data-d="5" aria-label="Plus five" style="font-size:13px;font-weight:700">+5</button>
+          </div>
+          <div class="note"><span>📝</span><input id="c-note" placeholder="Add a note (optional)" type="text"></div>
+        </div>
+        <div class="divider"></div>
+        <button class="btn split" id="next-btn"><span id="next-lbl"></span><span>→</span></button>
+        <button class="link" id="skip-btn">Skip for now</button>
+      </section>
+
+      <!-- 3. Review -->
+      <section class="screen" id="s-review">
+        <div class="topbar-row">
+          <button class="back-btn" id="review-back" aria-label="Back to list">←</button>
+          <div style="flex:1"><div class="title">Review count</div><div class="sub">Tap any item to correct it</div></div>
+        </div>
+        <div class="tiles">
+          <div class="tile"><b id="t-counted"></b><span>Counted</span></div>
+          <div class="tile"><b id="t-time"></b><span>Time taken</span></div>
+          <div class="tile"><b id="t-flag" class="warn"></b><span>Low stock</span></div>
+        </div>
+        <div class="alert" id="r-alert" hidden></div>
+        <div class="divider"></div>
+        <div class="scroll" id="review"></div>
+        <div class="divider"></div>
+        <button class="btn" id="submit-btn">✓ Submit count</button>
+      </section>
+
+      <!-- 4. Submitted -->
+      <section class="screen" id="s-done">
+        <div class="scroll">
+          <div class="done">
+            <div class="done-check">✓</div>
+            <div class="title">Count submitted</div>
+            <div class="sub" id="d-sub"></div>
+            <div class="order">
+              <div class="section-label" style="padding-left:0">Suggested reorder</div>
+              <div id="d-order"></div>
+            </div>
+          </div>
+        </div>
+        <button class="btn" id="new-btn">Start a new count</button>
+      </section>
     </div>
+    <button type="button" class="reset-link" id="reset">Reset demo</button>
   </div>
 
-  <!-- Screen 2: Active count (interactive) -->
-  <div class="screen-wrap">
-    <div class="screen-label">2 — count item (interactive)</div>
-    <div class="phone">
-      <div class="status-bar">
-        <span>9:43</span>
-        <span>●●●●○ 📶 🔋</span>
-      </div>
-      <div class="topbar-row">
-        <button class="back-btn" onclick="void(0)">←</button>
-        <div class="topbar-meta">
-          <div class="topbar-title" style="font-size:15px">Item 3 of 10</div>
-          <div class="topbar-sub">Soho · Morning shift</div>
-        </div>
-        <div style="font-size:11px;color:#bbb;">30%</div>
-      </div>
-      <div class="progress-wrap" style="padding-top:0;margin-bottom:8px;">
-        <div class="progress-track"><div class="progress-fill" style="width:30%"></div></div>
-      </div>
-      <div class="divider"></div>
-      <div class="count-header">
-        <div class="count-icon-lg">🥛</div>
-        <div>
-          <div class="count-item-name">Whole milk</div>
-          <div class="count-item-sub">Count in cartons · fridge + back of house</div>
-        </div>
-      </div>
-      <div>
-        <div style="padding:4px 18px 2px;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#bbb;">Location</div>
-        <div class="location-chips">
-          <div class="chip active" onclick="setChip(this)">Fridge</div>
-          <div class="chip" onclick="setChip(this)">Back of house</div>
-          <div class="chip" onclick="setChip(this)">Both</div>
-        </div>
-      </div>
-      <div class="tally">
-        <div class="tally-num" id="count-display">14</div>
-        <div class="tally-lbl">cartons counted</div>
-      </div>
-      <div class="tap-controls">
-        <button class="tap-btn" onclick="adjustCount(-1)" aria-label="minus one">−</button>
-        <button class="tap-btn-primary" onclick="adjustCount(1)" aria-label="plus one">+</button>
-        <button class="tap-btn" onclick="adjustCount(5)" aria-label="plus five" style="font-size:13px;font-weight:700;color:#444;">+5</button>
-      </div>
-      <div class="note-row">
-        <span class="note-icon">📝</span>
-        <input class="note-input" placeholder="Add a note (optional)" type="text">
-      </div>
-      <div class="divider"></div>
-      <button class="next-btn">
-        <span>Next: Oat milk</span>
-        <span>→</span>
-      </button>
-      <div class="skip-link">Skip item</div>
-    </div>
-  </div>
+  <article class="rationale">
+    <h2>Product rationale</h2>
+    <p class="lede">Why this works the way it does.</p>
 
-  <!-- Screen 3: Review & submit -->
-  <div class="screen-wrap">
-    <div class="screen-label">3 — review & submit</div>
-    <div class="phone">
-      <div class="status-bar">
-        <span>9:51</span>
-        <span>●●●●○ 📶 🔋</span>
-      </div>
-      <div class="topbar">
-        <div class="topbar-title">Review count</div>
-        <div class="topbar-sub">Soho · Morning shift · Mon 2 Jun</div>
-      </div>
-      <div class="summary-bar">
-        <div class="summary-tile"><div class="summary-val">10</div><div class="summary-lbl">Items</div></div>
-        <div class="summary-tile"><div class="summary-val">8 min</div><div class="summary-lbl">Time taken</div></div>
-        <div class="summary-tile"><div class="summary-val warn">1</div><div class="summary-lbl">Flagged</div></div>
-      </div>
-      <div class="divider"></div>
-      <div class="scroll-area">
-        <div class="review-row"><div class="review-icon">☕</div><div class="review-name">House blend beans</div><div class="review-count">4</div><div class="review-edit">✎</div></div>
-        <div class="review-row"><div class="review-icon">🫘</div><div class="review-name">Decaf beans</div><div class="review-count">2</div><div class="review-edit">✎</div></div>
-        <div class="review-row"><div class="review-icon">🥛</div><div class="review-name">Whole milk</div><div class="review-count">14</div><div class="review-edit">✎</div></div>
-        <div class="review-row flagged"><div class="review-icon">🌿</div><div class="review-name">Oat milk</div><div class="flag-badge">Low ⚠</div><div class="review-count warn">3</div><div class="review-edit">✎</div></div>
-        <div class="review-row"><div class="review-icon">🍵</div><div class="review-name">Matcha powder</div><div class="review-count">6</div><div class="review-edit">✎</div></div>
-        <div class="review-row"><div class="review-icon">🍦</div><div class="review-name">Vanilla syrup</div><div class="review-count">5</div><div class="review-edit">✎</div></div>
-        <div class="review-row"><div class="review-icon">🧇</div><div class="review-name">Caramel syrup</div><div class="review-count">3</div><div class="review-edit">✎</div></div>
-        <div class="review-row"><div class="review-icon">🥤</div><div class="review-name">12oz cups</div><div class="review-count">11</div><div class="review-edit">✎</div></div>
-        <div class="review-row"><div class="review-icon">🔵</div><div class="review-name">Cup lids</div><div class="review-count">9</div><div class="review-edit">✎</div></div>
-        <div class="review-row"><div class="review-icon">❄️</div><div class="review-name">Cold brew</div><div class="review-count">7</div><div class="review-edit">✎</div></div>
-      </div>
-      <div class="divider"></div>
-      <button class="submit-btn" onclick="alert('Count submitted! ✓')">✓ &nbsp; Submit count</button>
-    </div>
-  </div>
+    <h3>The problem</h3>
+    <p>Store managers count stock in spreadsheets today: slow, inconsistent between shops, and clunky to do on the shop floor. A wrong count means running out of oat milk at 9am or over-ordering stock that spoils.</p>
+    <p><strong>The brief:</strong> a lightweight count tool for a prioritised list of up to 10 items, hands-free (tapping, not typing) and error-tolerant (mistakes easy to fix). Auth, multi-store, dashboards and reporting were out of scope.</p>
 
+    <h3>Who it's for</h3>
+    <p><strong>A store manager on the shop floor</strong>, phone in one hand, walking between the fridge and back of house, likely to be interrupted by customers or staff. Not someone at a desk with a spreadsheet. Every decision below follows from that.</p>
+
+    <h3>Key decisions and why</h3>
+    <ul>
+      <li><strong>One item per screen, in shelf order.</strong> Fewer decisions per screen means fewer mistakes. Items are grouped the way stock is physically stored, so staff walk the shop once.</li>
+      <li><strong>Tap to count, never type.</strong> Large +, −, and +5 buttons work one-handed. +5 speeds up bulk items like cartons and cup sleeves.</li>
+      <li><strong>Count each location separately.</strong> Milk lives in the fridge and back of house. Counting them separately and showing the total avoids the most common error: counting one spot and forgetting the other.</li>
+      <li><strong>Catch mistakes as you go.</strong> The app flags anything below its par level as low stock, and asks for a double-check if a count is far higher than usual (an extra zero, for example).</li>
+      <li><strong>Skip, don't block.</strong> If an item can't be reached, staff skip it and keep going. Skipped items are clearly marked on review, so nothing is silently missed.</li>
+      <li><strong>Review before submit.</strong> One screen shows every count, low-stock flags and anything skipped. Tap to correct, then submit.</li>
+      <li><strong>Progress is saved.</strong> If a customer interrupts or the app closes, the count picks up where it left off.</li>
+      <li><strong>Turn the count into an action.</strong> Submitting shows suggested reorder quantities, because the count only matters if it drives the order.</li>
+    </ul>
+
+    <h3>What I left out, and why</h3>
+    <ul>
+      <li><strong>Barcode scanning:</strong> slower than tapping for a short list of familiar items, and needs camera permissions and good lighting.</li>
+      <li><strong>Login, multi-store and dashboards:</strong> out of scope in the brief, and only worth building once the count itself is fast and trusted.</li>
+      <li><strong>Automatic ordering:</strong> suggested quantities first; a human approves the order until the data is proven reliable.</li>
+    </ul>
+
+    <h3>How I'd measure success</h3>
+    <ul>
+      <li><strong>Primary:</strong> time to complete a count (target: under 10 minutes).</li>
+      <li><strong>Accuracy:</strong> gap between counted stock and stock implied by sales and deliveries.</li>
+      <li><strong>Outcomes:</strong> fewer stock-outs of key items, less waste from over-ordering.</li>
+      <li><strong>Adoption:</strong> share of shifts completing a count, and how often items are skipped.</li>
+    </ul>
+
+    <h3>Next steps</h3>
+    <p>Test it with store managers during a real shift, watch where they hesitate, and compare time and accuracy with the current process before adding anything new.</p>
+  </article>
 </div>
 
 <script>
-  let count = 14;
+const ITEMS = [
+  { id:'house',   cat:'Beans & espresso', icon:'☕', name:'House blend beans', unit:'bags',    locs:['Back of house'], par:4, usual:6 },
+  { id:'decaf',   cat:'Beans & espresso', icon:'🫘', name:'Decaf beans',       unit:'bags',    locs:['Back of house'], par:2, usual:3 },
+  { id:'whole',   cat:'Milk & dairy',     icon:'🥛', name:'Whole milk',        unit:'cartons', locs:['Fridge','Back of house'], par:12, usual:18 },
+  { id:'oat',     cat:'Milk & dairy',     icon:'🌿', name:'Oat milk',          unit:'cartons', locs:['Fridge','Back of house'], par:10, usual:16 },
+  { id:'matcha',  cat:'Syrups & sauces',  icon:'🍵', name:'Matcha powder',     unit:'tins',    locs:['Back of house'], par:2, usual:4 },
+  { id:'vanilla', cat:'Syrups & sauces',  icon:'🍦', name:'Vanilla syrup',     unit:'bottles', locs:['Bar'], par:3, usual:5 },
+  { id:'caramel', cat:'Syrups & sauces',  icon:'🍯', name:'Caramel syrup',     unit:'bottles', locs:['Bar'], par:3, usual:5 },
+  { id:'cups',    cat:'Cups & packaging', icon:'🥤', name:'12oz cups',         unit:'sleeves', locs:['Bar','Back of house'], par:8, usual:12 },
+  { id:'lids',    cat:'Cups & packaging', icon:'🔵', name:'Cup lids',          unit:'packs',   locs:['Bar','Back of house'], par:6, usual:10 },
+  { id:'cold',    cat:'Cups & packaging', icon:'❄️', name:'Cold brew',         unit:'bottles', locs:['Fridge'], par:6, usual:10 },
+];
+const KEY = 'bs-inventory-count-v2';
+let S = load() || fresh();
+let cur = 0, loc = 0, returnTo = null;
 
-  function adjustCount(delta) {
-    count = Math.max(0, count + delta);
-    document.getElementById('count-display').textContent = count;
-  }
+function fresh(){ return { counts:{}, skipped:{}, notes:{}, started:null, submittedAt:null }; }
+function load(){ try { return JSON.parse(localStorage.getItem(KEY)); } catch(e){ return null; } }
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
 
-  function setChip(el) {
-    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-    el.classList.add('active');
-  }
+const $ = id => document.getElementById(id);
+const total = it => (S.counts[it.id] || []).reduce((a,b)=>a+(b||0),0);
+const isCounted = it => Array.isArray(S.counts[it.id]);
+const isLow = it => isCounted(it) && total(it) < it.par;
+const countedN = () => ITEMS.filter(isCounted).length;
+const doneN = () => ITEMS.filter(it => isCounted(it) || S.skipped[it.id]).length;
+const firstOpen = () => { const i = ITEMS.findIndex(it => !isCounted(it) && !S.skipped[it.id]); return i; };
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === id));
+  const t = new Date(); $('clock').textContent = t.getHours() + ':' + String(t.getMinutes()).padStart(2,'0');
+}
+
+/* ---- List ---- */
+function renderList(){
+  const n = doneN(), pct = Math.round(n / ITEMS.length * 100);
+  $('list-fill').style.width = pct + '%';
+  $('list-progress').textContent = countedN() + ' of ' + ITEMS.length + ' items counted';
+  $('list-pct').textContent = pct + '%';
+  let html = '', cat = '';
+  ITEMS.forEach((it,i) => {
+    if (it.cat !== cat){ cat = it.cat; html += `<div class="section-label">${cat}</div>`; }
+    let right = `<span class="unit">${it.unit}</span><span class="muted">›</span>`;
+    if (isCounted(it)) right = (isLow(it) ? `<span class="badge low">Low</span>` : '') + `<span class="val ${isLow(it)?'warn':''}">${total(it)}</span><span class="tick">✓</span>`;
+    else if (S.skipped[it.id]) right = `<span class="badge skip">Skipped</span><span class="muted">›</span>`;
+    html += `<button class="row" data-i="${i}"><span class="icon">${it.icon}</span><span class="name">${it.name}</span>${right}</button>`;
+  });
+  $('list').innerHTML = html;
+  $('list').querySelectorAll('.row').forEach(r => r.onclick = () => openItem(+r.dataset.i));
+  const btn = $('start-btn');
+  if (n === ITEMS.length) btn.textContent = 'Review count →';
+  else if (n > 0) btn.textContent = 'Continue count →';
+  else btn.textContent = 'Start count →';
+}
+$('start-btn').onclick = () => {
+  const i = firstOpen();
+  if (i === -1) openReview(); else openItem(i);
+};
+
+/* ---- Count ---- */
+function openItem(i, from){
+  if (!S.started) { S.started = Date.now(); save(); }
+  cur = i; loc = 0; returnTo = from || null;
+  const it = ITEMS[i];
+  if (!isCounted(it)) S.counts[it.id] = it.locs.map(()=>0);
+  delete S.skipped[it.id];
+  save();
+  $('c-icon').textContent = it.icon;
+  $('c-name').textContent = it.name;
+  $('c-sub').textContent = 'Count in ' + it.unit + ' · ' + it.locs.join(' + ').toLowerCase();
+  $('c-note').value = S.notes[it.id] || '';
+  renderCount();
+  show('s-count');
+}
+function renderCount(){
+  const it = ITEMS[cur], c = S.counts[it.id];
+  const pct = Math.round(doneN() / ITEMS.length * 100);
+  $('count-pos').textContent = 'Item ' + (cur+1) + ' of ' + ITEMS.length;
+  $('count-pct').textContent = pct + '%';
+  $('count-fill').style.width = pct + '%';
+  $('chips').innerHTML = it.locs.length > 1
+    ? it.locs.map((l,k) => `<button class="chip ${k===loc?'active':''}" data-k="${k}">${l}<small>${c[k]}</small></button>`).join('')
+    : `<span class="chip active">${it.locs[0]}</span>`;
+  $('chips').querySelectorAll('[data-k]').forEach(b => b.onclick = () => { loc = +b.dataset.k; renderCount(); });
+  $('c-num').textContent = c[loc];
+  const t = total(it);
+  $('c-lbl').textContent = it.locs.length > 1
+    ? `${it.unit} in ${it.locs[loc].toLowerCase()} · total ${t}`
+    : `${it.unit} counted`;
+  const hint = $('c-hint');
+  if (t > it.usual * 2) { hint.className = 'hint warn'; hint.textContent = `That's much higher than usual (~${it.usual}). Double-check?`; }
+  else if (t < it.par) { hint.className = 'hint warn'; hint.textContent = `Below par of ${it.par} · will be flagged low`; }
+  else { hint.className = 'hint muted'; hint.textContent = it.locs.length > 1 && loc < it.locs.length-1 ? `Next: count the ${it.locs[loc+1].toLowerCase()}` : ''; }
+  const nextIdx = nextOpenAfter(cur);
+  $('next-lbl').textContent = returnTo === 'review' ? 'Save and back to review'
+    : (it.locs.length > 1 && loc < it.locs.length - 1) ? 'Next: ' + it.locs[loc+1]
+    : nextIdx === -1 ? 'Review count' : 'Next: ' + ITEMS[nextIdx].name;
+  $('skip-btn').style.visibility = returnTo === 'review' ? 'hidden' : 'visible';
+}
+function nextOpenAfter(i){
+  for (let k = i+1; k < ITEMS.length; k++) if (!isCounted(ITEMS[k]) && !S.skipped[ITEMS[k].id]) return k;
+  for (let k = 0; k < i; k++) if (!isCounted(ITEMS[k]) && !S.skipped[ITEMS[k].id]) return k;
+  return -1;
+}
+document.querySelectorAll('.tap').forEach(b => b.onclick = () => {
+  const c = S.counts[ITEMS[cur].id];
+  c[loc] = Math.max(0, c[loc] + (+b.dataset.d));
+  save(); renderCount();
+});
+$('c-note').oninput = e => { S.notes[ITEMS[cur].id] = e.target.value; save(); };
+$('next-btn').onclick = () => {
+  const it = ITEMS[cur];
+  if (returnTo === 'review') return openReview();
+  if (it.locs.length > 1 && loc < it.locs.length - 1) { loc++; return renderCount(); }
+  advance();
+};
+$('skip-btn').onclick = () => {
+  const it = ITEMS[cur];
+  delete S.counts[it.id]; S.skipped[it.id] = true; save();
+  advance();
+};
+function advance(){
+  const n = nextOpenAfter(cur);
+  if (n === -1) openReview(); else openItem(n);
+}
+$('count-back').onclick = () => {
+  if (returnTo === 'review') return openReview();
+  const it = ITEMS[cur];
+  if (isCounted(it) && total(it) === 0 && !S.notes[it.id]) { delete S.counts[it.id]; save(); }
+  renderList(); show('s-list');
+};
+
+/* ---- Review ---- */
+function openReview(){
+  const counted = countedN(), skipped = ITEMS.filter(it => S.skipped[it.id]);
+  const unseen = ITEMS.filter(it => !isCounted(it) && !S.skipped[it.id]);
+  const low = ITEMS.filter(isLow);
+  $('t-counted').textContent = counted + '/' + ITEMS.length;
+  const mins = S.started ? Math.max(1, Math.round((Date.now() - S.started) / 60000)) : 0;
+  $('t-time').textContent = mins + ' min';
+  $('t-flag').textContent = low.length;
+  const missing = skipped.length + unseen.length;
+  const a = $('r-alert');
+  a.hidden = missing === 0;
+  a.textContent = missing ? `${missing} item${missing>1?'s':''} not counted. Tap to count, or submit without ${missing>1?'them':'it'}.` : '';
+  $('review').innerHTML = ITEMS.map((it,i) => {
+    let right;
+    if (isCounted(it)) right = (isLow(it) ? `<span class="badge low">Low ⚠</span>` : '') + `<span class="val ${isLow(it)?'warn':''}">${total(it)}</span>`;
+    else right = `<span class="badge skip">Not counted</span>`;
+    const note = S.notes[it.id] ? ` <span title="${S.notes[it.id].replace(/"/g,'&quot;')}">📝</span>` : '';
+    return `<button class="row ${isLow(it)?'flag':''}" data-i="${i}"><span class="icon">${it.icon}</span><span class="name">${it.name}${note}</span>${right}<span class="muted">✎</span></button>`;
+  }).join('');
+  $('review').querySelectorAll('.row').forEach(r => r.onclick = () => openItem(+r.dataset.i, 'review'));
+  $('submit-btn').disabled = counted === 0;
+  $('submit-btn').textContent = missing ? `✓ Submit with ${missing} missing` : '✓ Submit count';
+  show('s-review');
+}
+$('review-back').onclick = () => { renderList(); show('s-list'); };
+$('submit-btn').onclick = () => {
+  S.submittedAt = Date.now(); save();
+  const low = ITEMS.filter(isLow);
+  $('d-sub').textContent = `${countedN()} items counted · ${low.length} low stock`;
+  $('d-order').innerHTML = low.length
+    ? low.map(it => `<div class="row" style="cursor:default"><span class="icon">${it.icon}</span><span class="name">${it.name}</span><span class="val">+${it.usual - total(it)}</span><span class="unit">${it.unit}</span></div>`).join('')
+    : `<p class="sub">Nothing below par. No reorder needed.</p>`;
+  show('s-done');
+};
+function resetDemo(){
+  try { localStorage.removeItem(KEY); } catch(e){}
+  S = fresh(); cur = 0; loc = 0; returnTo = null;
+  $('c-note').value = '';
+  renderList(); show('s-list');
+  $('list').scrollTop = 0;
+}
+$('new-btn').addEventListener('click', resetDemo);
+$('reset').addEventListener('click', resetDemo);
+
+/* ---- Init: resume where the user left off ---- */
+if (S.submittedAt) S = fresh();
+renderList();
 </script>
 </body>
 </html>
